@@ -34,7 +34,41 @@ async function run() {
 
     const db = client.db('movieMaster_pro_db');
     const moviesCollection = db.collection('movies');
+    const allMoviesCollection = db.collection('allMovies');
 
+
+
+    app.get('/allMovies', async (req, res) => {
+      const cursor = allMoviesCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get('/allMovies/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: id}
+      const result = await allMoviesCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.get('/top-rating-movie', async (req, res) => {
+  const result = await allMoviesCollection
+    .find()
+    .sort({ rating: -1 }) // highest rating first
+    .limit(5)
+    .toArray();
+
+  res.send(result); // send only the top movie
+});
+
+
+
+    app.get('/allMovies/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id }
+      const result = await allMoviesCollection.findOne(query);
+      res.send(result);
+    })
 
     app.post('/add-movies', async (req, res) => {
       const newMovie = req.body;
