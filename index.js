@@ -46,29 +46,21 @@ async function run() {
 
     app.get('/allMovies/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: id}
+      const query = { _id: id }
       const result = await allMoviesCollection.findOne(query);
       res.send(result);
     });
 
     app.get('/top-rating-movie', async (req, res) => {
-  const result = await allMoviesCollection
-    .find()
-    .sort({ rating: -1 }) // highest rating first
-    .limit(5)
-    .toArray();
+      const result = await allMoviesCollection
+        .find()
+        .sort({ rating: -1 }) 
+        .limit(5)
+        .toArray();
 
-  res.send(result); // send only the top movie
-});
+      res.send(result); 
+    });
 
-
-
-    app.get('/allMovies/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: id }
-      const result = await allMoviesCollection.findOne(query);
-      res.send(result);
-    })
 
     app.post('/add-movies', async (req, res) => {
       const newMovie = req.body;
