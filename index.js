@@ -63,12 +63,12 @@ async function run() {
       res.send(result);
     });
 
-      app.delete('/allMovies/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await allMoviesCollection.deleteOne(query);
-            res.send(result);
-        })
+    app.delete('/allMovies/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await allMoviesCollection.deleteOne(query);
+      res.send(result);
+    })
 
 
 
@@ -77,6 +77,54 @@ async function run() {
       const result = await allMoviesCollection.insertOne(newMovie);
       res.send(result);
     })
+
+    app.get('/allMovies', async (req, res) => {
+      const cursor = allMoviesCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+
+
+    app.patch('/allMovies/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedMovie = req.body;
+
+      let query;
+      try {
+        // Try using ObjectId for MongoDB _id
+        query = { _id: new ObjectId(id) };
+      } catch (err) {
+        // If id is not a valid ObjectId, fallback to string
+        query = { _id: id };
+      }
+
+      const update = {
+        $set: {
+          title: updatedMovie.title,
+          genre: updatedMovie.genre,
+          releaseYear: updatedMovie.releaseYear,
+          director: updatedMovie.director,
+          cast: updatedMovie.cast,
+          rating: updatedMovie.rating,
+          duration: updatedMovie.duration,
+          plotSummary: updatedMovie.plotSummary,
+          posterUrl: updatedMovie.posterUrl,
+          language: updatedMovie.language,
+          country: updatedMovie.country,
+          addedBy: updatedMovie.addedBy,
+        },
+      };
+
+      try {
+        const result = await allMoviesCollection.updateOne(query, update);
+        res.send(result);
+      } catch (error) {
+        console.error("Error updating movie:", error);
+        res.status(500).send({ error: "Failed to update movie" });
+      }
+    });
+
 
     app.get('/top-rating-movie', async (req, res) => {
       const result = await allMoviesCollection
