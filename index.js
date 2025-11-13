@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -44,39 +44,57 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/allMovies/:id', async (req, res) => {
+    app.get("/allMovies/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: id }
-      const result = await allMoviesCollection.findOne(query);
+      let result = await allMoviesCollection.findOne({ _id: id });
+
+      if (!result) {
+        try {
+          const objectId = new ObjectId(id);
+          result = await allMoviesCollection.findOne({ _id: objectId });
+        } catch (err) {
+        }
+      }
+
+      if (!result) {
+        return res.status(404).send({ message: "Movie not found" });
+      }
+
       res.send(result);
     });
+
+
+
+    app.post('/allMovies', async (req, res) => {
+      const newMovie = req.body;
+      const result = await allMoviesCollection.insertOne(newMovie);
+      res.send(result);
+    })
 
     app.get('/top-rating-movie', async (req, res) => {
       const result = await allMoviesCollection
         .find()
-        .sort({ rating: -1 }) 
+        .sort({ rating: -1 })
         .limit(5)
         .toArray();
 
-      res.send(result); 
+      res.send(result);
     });
 
 
-    app.post('/add-movies', async (req, res) => {
-      const newMovie = req.body;
-      const result = await moviesCollection.insertOne(newMovie);
-      res.send(result);
-    })
-
-     app.get('/myCollection', async (req, res) => {
-      const cursor = moviesCollection.find();
+    app.get('/myCollection', async (req, res) => {
+      const query = {};
+      if (query.email) {
+        query.addedBy = email;
+      }
+      const cursor = allMoviesCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-     app.get('/myCollection/:id', async (req, res) => {
+    app.get('/allMovies/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: id }
+      const query = { _id: new ObjectId(id) }
       const result = await moviesCollection.findOne(query);
       res.send(result);
     });
