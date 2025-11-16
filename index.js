@@ -53,6 +53,13 @@ async function run() {
       }
     })
 
+    app.get('/users', async (req, res) => {
+      const cursor = usersCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+
 
     app.get('/allMovies', async (req, res) => {
       const cursor = allMoviesCollection.find();
@@ -108,10 +115,8 @@ async function run() {
 
       let query;
       try {
-        // Try using ObjectId for MongoDB _id
         query = { _id: new ObjectId(id) };
       } catch (err) {
-        // If id is not a valid ObjectId, fallback to string
         query = { _id: id };
       }
 
@@ -141,6 +146,28 @@ async function run() {
       }
     });
 
+    app.get("/allMovies", async (req, res) => {
+      const { genres, minRating, maxRating } = req.query;
+
+      let query = {};
+
+      // ⭐ Filter by multiple genres using $in
+      if (genres && genres.length > 0) {
+        query.genre = { $in: genres };
+      }
+
+      // ⭐ Filter by rating range using $gte and $lte
+      if (minRating || maxRating) {
+        query.rating = {};
+        if (minRating) query.rating.$gte = Number(minRating);
+        if (maxRating) query.rating.$lte = Number(maxRating);
+      }
+
+      const movies = await moviesCollection.find(query).toArray();
+      res.send(movies);
+    });
+
+
 
     app.get('/top-rating-movie', async (req, res) => {
       const result = await allMoviesCollection
@@ -148,9 +175,19 @@ async function run() {
         .sort({ rating: -1 })
         .limit(5)
         .toArray();
-
       res.send(result);
     });
+
+    app.get("/recent-movies", async (req, res) => {
+      const movies = await allMoviesCollection
+        .find({})
+        .sort({ _id: -1 })
+        .limit(6)
+        .toArray();
+      res.send(movies);
+    });
+
+
 
 
     app.get('/myCollection', async (req, res) => {
