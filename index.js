@@ -36,6 +36,7 @@ async function run() {
     const moviesCollection = db.collection('movies');
     const allMoviesCollection = db.collection('allMovies');
     const usersCollection = db.collection('users');
+    const watchlistCollection = db.collection('watchlist');
 
     // USERS APIs
     app.post('/users', async (req, res) => {
@@ -151,12 +152,12 @@ async function run() {
 
       let query = {};
 
-      // ⭐ Filter by multiple genres using $in
+
       if (genres && genres.length > 0) {
         query.genre = { $in: genres };
       }
 
-      // ⭐ Filter by rating range using $gte and $lte
+
       if (minRating || maxRating) {
         query.rating = {};
         if (minRating) query.rating.$gte = Number(minRating);
@@ -199,6 +200,61 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+
+
+    app.post("/watchlist", async (req, res) => {
+      try {
+        const { email, movie } = req.body;
+        const existing = await watchlistCollection.findOne({
+          email: email,
+          "movie._id": movie._id
+        });
+
+        if (existing) {
+          return res.status(400).send({ message: "Movie already add watchlist" });
+        }
+
+
+        const result = await watchlistCollection.insertOne({
+          email,
+          movie,
+          createdAt: new Date()
+        });
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Failed to add movie" });
+      }
+    });
+
+
+   app.get("/watchlist/user/:email", async (req, res) => {
+    const email = req.params.email;
+    const result = await watchlistCollection.find({ email }).toArray();
+    res.send(result);
+});
+
+
+     app.get("/watchlist/:id", async (req, res) => {
+    const id = req.params.id;
+    const result = await watchlistCollection.findOne({
+        _id: new ObjectId(id)
+    });
+    res.send(result);
+});
+
+
+    app.delete('/watchlist/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await watchlistCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+
 
 
     await client.db("admin").command({ ping: 1 });
