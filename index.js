@@ -23,14 +23,11 @@ const client = new MongoClient(uri, {
 
 
 
-app.get('/', (req, res) => {
-  res.send('MovieMaster Pro server is running')
-})
 
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db('movieMaster_pro_db');
     const moviesCollection = db.collection('movies');
@@ -257,13 +254,18 @@ async function run() {
 
 
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // await client.close();
   }
 }
 run().catch(console.dir);
+
+app.get('/', (req, res) => {
+  res.send('MovieMaster Pro server is running')
+})
+
 
 
 app.listen(port, () => {
