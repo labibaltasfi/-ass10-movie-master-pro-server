@@ -171,7 +171,7 @@ async function run() {
       const result = await allMoviesCollection
         .find()
         .sort({ rating: -1 })
-        .limit(5)
+        .limit(4)
         .toArray();
       res.send(result);
     });
@@ -251,7 +251,7 @@ async function run() {
     })
 
 
-
+ 
 
 
     // await client.db("admin").command({ ping: 1 });
@@ -271,3 +271,5 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`MovieMaster Pro  server is running on port: ${port}`)
 })
+
+// labibaltasfi1@gmail.com
